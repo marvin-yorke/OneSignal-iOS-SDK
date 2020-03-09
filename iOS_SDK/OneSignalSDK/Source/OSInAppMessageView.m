@@ -56,11 +56,55 @@
 - (void)loadedHtmlContent:(NSString *)html withBaseURL:(NSURL *)url {
     // UI Update must be done on the main thread
     NSLog(@"11111 [self.webView loadHTMLString:html baseURL:url];");
-     dispatch_sync(dispatch_get_main_queue(), ^{
-         NSLog(@"222222 [self.webView loadHTMLString:html baseURL:url];");
-         [self.webView loadHTMLString:html baseURL:url];
-     });
+    
+    // TODO: Hijack IAM html and add new values in
+    
+    dispatch_sync(dispatch_get_main_queue(), ^{
+     NSLog(@"222222 [self.webView loadHTMLString:html baseURL:url];");
+     [self.webView loadHTMLString:html baseURL:url];
+    });
 }
+
+//- (NSString*)addTagsButtonToHtml:(NSDictionary *)adds removes:(NSArray *)removes {
+//    bool dismiss = OneSignal.shouldDismissOnClick;
+//
+//    return @"<button type=\"button\" id=\"button\" class=\"iam-button iam-clickable\""
+//            "   data-action-payload='{"
+//            "       \"url_target\":\"browser\","
+//            "       \"close\":" + OneSignal.shouldDismissOnClick + ","
+//            "       \"url\":\"\","
+//            "       \"tags\":{"
+//            "           \"adds\":" + adds.toString() + ","
+//            "           \"removes\": " + removes.toString()
+//            "       }"
+//            "   }'"
+//            "   data-action-label=\"button\">Send Tags</button>\n"
+//            "\n";
+//   }
+//
+//- (NSString*)addOutcomesButtonToHtml(NSArray*) outcomeJson) {
+//       return "<button type=\"button\" id=\"button\" class=\"iam-button iam-clickable\"" +
+//               "   data-action-payload='{" +
+//               "       \"url_target\":\"browser\"," +
+//               "       \"close\":" + OneSignal.shouldDismissOnClick + "," +
+//               "       \"url\":\"\"," +
+//               "       \"outcomes\": " + outcomeJson.toString() +
+//               "   }'" +
+//               "   data-action-label=\"button\">Send Outcomes</button>\n" +
+//               "\n";
+//   }
+//
+//- (NSString*)addLocationPromptingButtonToHtml(JSONArray promptJson) {
+//       return "<button type=\"button\" id=\"button\" class=\"iam-button iam-clickable\"" +
+//               "   data-action-payload='{" +
+//               "       \"url_target\":\"browser\"," +
+//               "       \"close\":" + OneSignal.shouldDismissOnClick + "," +
+//               "       \"url\":\"\"," +
+//               "       \"prompts\": " + promptJson.toString() +
+//               "   }'" +
+//               "   data-action-label=\"button\">Location Prompt</button>\n" +
+//               "\n";
+//   }
 
 - (void)setupWebviewWithMessageHandler:(id<WKScriptMessageHandler>)handler {
     let configuration = [WKWebViewConfiguration new];
