@@ -56,7 +56,7 @@
 - (void)loadedHtmlContent:(NSString *)html withBaseURL:(NSURL *)url {
     // UI Update must be done on the main thread
     NSLog(@"11111 [self.webView loadHTMLString:html baseURL:url];");
-    
+
     html = @"<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no\">\n"
            @"<style>\n"
            @"    * {\n"
@@ -341,7 +341,7 @@
         NSLog(tagButton);
         html = [html stringByAppendingString:tagButton];
     }
-    
+
     // Outcomes Button
     if (OneSignal.iamV2Outcomes && ![OneSignal.iamV2Outcomes isEqualToString:@""]) {
         NSArray *outcomeSplit = [OneSignal.iamV2Outcomes componentsSeparatedByString:@","];
@@ -382,16 +382,16 @@
         NSLog(pushButton);
         html = [html stringByAppendingString:pushButton];
     }
-    
+
     // Location Prompt Button
     if ([OneSignal.iamV2Prompting containsObject:@"location"]) {
         NSString *locationButton = [self addLocationPromptingButtonToHtml];
         NSLog(locationButton);
         html = [html stringByAppendingString:locationButton];
     }
-    
+
     html = [html stringByAppendingString:suffix];
-    
+
     dispatch_sync(dispatch_get_main_queue(), ^{
      NSLog(@"222222 [self.webView loadHTMLString:html baseURL:url];");
      [self.webView loadHTMLString:html baseURL:url];
@@ -400,7 +400,7 @@
 
 - (NSString*)addTagsButtonToHtml:(NSDictionary *)adds removes:(NSArray *)removes {
     NSString *dismiss = OneSignal.iamV2ShouldDismiss ? @"true" : @"false";
-    
+
     NSError* error = nil;
     NSData *addsJsonData = [NSJSONSerialization dataWithJSONObject:adds options:NSJSONWritingPrettyPrinted error:&error];
     NSString *addsJsonString = [[NSString alloc] initWithData:addsJsonData encoding:NSUTF8StringEncoding];
@@ -408,7 +408,7 @@
     if (error)
         NSLog(error.description);
     error = nil;
-    
+
     NSData *removesJsonData = [NSJSONSerialization dataWithJSONObject:removes options:NSJSONWritingPrettyPrinted error:&error];
     NSString *removesJsonString = [[NSString alloc] initWithData:removesJsonData encoding:NSUTF8StringEncoding];
     NSLog(removesJsonString.description);
@@ -433,7 +433,7 @@
 
 - (NSString*)addOutcomesButtonToHtml:(NSArray*) outcomeJson {
        NSString *dismiss = OneSignal.iamV2ShouldDismiss ? @"true" : @"false";
-        
+
         NSError* error = nil;
         NSData *outcomesJsonData = [NSJSONSerialization dataWithJSONObject:outcomeJson options:NSJSONWritingPrettyPrinted error:&error];
         NSString *outcomesJsonString = [[NSString alloc] initWithData:outcomesJsonData encoding:NSUTF8StringEncoding];
@@ -456,7 +456,7 @@
 
 - (NSString*)addPushPromptingButtonToHtml {
     NSString *dismiss = OneSignal.iamV2ShouldDismiss ? @"true" : @"false";
-    
+
     return [[NSString alloc] initWithFormat:
              @"<button type=\"button\" id=\"button\" class=\"iam-button iam-clickable\""
              @"   data-action-payload='{"

@@ -145,7 +145,7 @@ static BOOL _isInAppMessagingPaused = false;
 - (void)updateInAppMessagesFromCache {
     NSMutableArray *cachedMessages = [NSMutableArray new];
     self.messages = [OneSignalUserDefaults.initStandard getSavedCodeableDataForKey:OS_IAM_MESSAGES_ARRAY defaultValue:[NSArray new]];
-    
+
     for (OSInAppMessage *cachedMessage in self.messages) {
         let message = [OSInAppMessage instanceWithJson:cachedMessage.jsonRepresentation];
 
@@ -159,7 +159,7 @@ static BOOL _isInAppMessagingPaused = false;
         [OneSignal setIamV2DataPulled:true];
         return;
     }
-    
+
     [self resetRedisplayMessagesBySession];
     [self evaluateMessages];
     [self deleteOldRedisplayedInAppMessages];
@@ -167,12 +167,17 @@ static BOOL _isInAppMessagingPaused = false;
 
 - (void)updateInAppMessagesFromOnSession:(NSArray<OSInAppMessage *> *)newMessages {
     self.messages = newMessages;
-    
+
     // Cache if messages passed in are not null, this method is called from on_session for
     //  new messages and cached when foregrounding app
     if (self.messages)
         [OneSignalUserDefaults.initStandard saveCodeableDataForKey:OS_IAM_MESSAGES_ARRAY withValue:self.messages];
-    
+
+    if (!OneSignal.iamV2DataPulled) {
+        [OneSignal setIamV2DataPulled:true];
+        return;
+    }
+
     if (!OneSignal.iamV2DataPulled) {
         [OneSignal setIamV2DataPulled:true];
         return;
@@ -373,6 +378,7 @@ static BOOL _isInAppMessagingPaused = false;
             && [message.displayStats shouldDisplayAgain]) {
 
             [OneSignal onesignal_Log:ONE_S_LL_VERBOSE message:@"setDataForRedisplay clear arrays"];
+            
             [self.seenInAppMessages removeObject:message.messageId];
             [self.impressionedInAppMessages removeObject:message.messageId];
             [message clearClickIds];
