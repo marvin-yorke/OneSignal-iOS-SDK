@@ -98,10 +98,11 @@ static BOOL _isInAppMessagingPaused = false;
     return _isInAppMessagingPaused;
 }
 - (void)setInAppMessagingPaused:(BOOL)pause {
+    bool prevPause = _isInAppMessagingPaused;
     _isInAppMessagingPaused = pause;
     
-    // If IAM are not paused, try to evaluate and show IAMs
-    if (!pause)
+    // If IAM wer epreviously paused, try to evaluate and show IAMs
+    if (prevPause)
         [self evaluateMessages];
 }
 
@@ -120,8 +121,7 @@ static BOOL _isInAppMessagingPaused = false;
         self.dateGenerator = ^ NSTimeInterval {
             return [[NSDate date] timeIntervalSince1970];
         };
-        self.messages = [OneSignalUserDefaults.initStandard getSavedCodeableDataForKey:OS_IAM_MESSAGES_ARRAY
-                                                                                          defaultValue:[NSArray<OSInAppMessage *> new]];
+        self.messages = [OneSignalUserDefaults.initStandard getSavedCodeableDataForKey:OS_IAM_MESSAGES_ARRAY defaultValue:[NSArray<OSInAppMessage *> new]];
         self.triggerController = [OSTriggerController new];
         self.triggerController.delegate = self;
         self.messageDisplayQueue = [NSMutableArray new];
@@ -144,6 +144,12 @@ static BOOL _isInAppMessagingPaused = false;
 
 - (void)updateInAppMessagesFromCache {
     self.messages = [OneSignalUserDefaults.initStandard getSavedCodeableDataForKey:OS_IAM_MESSAGES_ARRAY defaultValue:[NSArray new]];
+    
+    if (!OneSignal.iamV2DataPulled) {
+        [OneSignal setIamV2DataPulled:true];
+        return;
+    }
+    
     [self evaluateMessages];
 }
 
@@ -154,7 +160,7 @@ static BOOL _isInAppMessagingPaused = false;
     //  new messages and cached when foregrounding app
     if (self.messages)
         [OneSignalUserDefaults.initStandard saveCodeableDataForKey:OS_IAM_MESSAGES_ARRAY withValue:self.messages];
-
+    
     if (!OneSignal.iamV2DataPulled) {
         [OneSignal setIamV2DataPulled:true];
         return;
