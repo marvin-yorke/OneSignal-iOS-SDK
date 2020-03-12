@@ -84,7 +84,12 @@
     return [self instanceWithJson:json];
 }
 
-+ (instancetype)instanceWithJson:(NSDictionary * _Nonnull)json {
++ (instancetype)instanceWithJson:(NSDictionary * _Nonnull)tempJson {
+    NSMutableDictionary* json = [[NSMutableDictionary alloc] initWithDictionary:tempJson];
+    NSLog(@"Dict Before: %@", json.description);
+    NSLog(@"Count: %@", @(OneSignal.iamV2RedisplayCount));
+    NSLog(@"Delay: %@", @(OneSignal.iamV2RedisplayDelay));
+    
     let message = [OSInAppMessage new];
     
     if (json[@"id"] && [json[@"id"] isKindOfClass:[NSString class]])
@@ -96,6 +101,13 @@
         message.variants = json[@"variants"];
     else
         return nil;
+    
+    json[@"redisplay"] =
+    @{
+        @"limit": @(OneSignal.iamV2RedisplayCount),
+        @"delay": @(OneSignal.iamV2RedisplayDelay)
+    };
+    NSLog(@"Dict After: %@", json.description);
     
     if (json[@"redisplay"] && [json[@"redisplay"] isKindOfClass:[NSDictionary class]])
         message.displayStats = [OSInAppMessageDisplayStats instanceWithJson:json[@"redisplay"]];
@@ -129,7 +141,7 @@
     
     //TODO: This will need to be changed when we add core data or database to iOS, see android implementation for reference
     if (json[@"displayed_in_session"]) {
-        message.isDisplayedInSession = json[@"displayed_in_session"];
+        message.isDisplayedInSession = (bool) json[@"displayed_in_session"];
     }
     return message;
 }
@@ -141,7 +153,7 @@
     return message;
 }
 
--(NSDictionary *)jsonRepresentation {
+- (NSDictionary *)jsonRepresentation {
     let json = [NSMutableDictionary new];
     
     json[@"id"] = self.messageId;

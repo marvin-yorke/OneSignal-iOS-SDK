@@ -143,14 +143,26 @@ static BOOL _isInAppMessagingPaused = false;
 }
 
 - (void)updateInAppMessagesFromCache {
+    NSMutableArray *cachedMessages = [NSMutableArray new];
     self.messages = [OneSignalUserDefaults.initStandard getSavedCodeableDataForKey:OS_IAM_MESSAGES_ARRAY defaultValue:[NSArray new]];
     
+    for (OSInAppMessage *cachedMessage in self.messages) {
+        let message = [OSInAppMessage instanceWithJson:cachedMessage.jsonRepresentation];
+
+        if (message)
+            [cachedMessages addObject:message];
+    }
+
+    self.messages = cachedMessages;
+
     if (!OneSignal.iamV2DataPulled) {
         [OneSignal setIamV2DataPulled:true];
         return;
     }
     
+    [self resetRedisplayMessagesBySession];
     [self evaluateMessages];
+    [self deleteOldRedisplayedInAppMessages];
 }
 
 - (void)updateInAppMessagesFromOnSession:(NSArray<OSInAppMessage *> *)newMessages {
@@ -340,6 +352,8 @@ static BOOL _isInAppMessagingPaused = false;
         return;
     }
 
+    NSLog(@"Redisplay IAM: %@", message.jsonRepresentation.description);
+
     BOOL messageDismissed = [_seenInAppMessages containsObject:message.messageId];
     let redisplayMessageSavedData = [_redisplayedInAppMessages objectForKey:message.messageId];
 
@@ -354,11 +368,11 @@ static BOOL _isInAppMessagingPaused = false;
         // Message that don't have triggers should display only once per session
         BOOL triggerHasChanged = message.isTriggerChanged || (!redisplayMessageSavedData.isDisplayedInSession && [message.triggers count] == 0);
         // Check if conditions are correct for redisplay
-        if (triggerHasChanged &&
-            [message.displayStats isDelayTimeSatisfied:self.dateGenerator()] &&
-            [message.displayStats shouldDisplayAgain]) {
-            [OneSignal onesignal_Log:ONE_S_LL_VERBOSE message:@"setDataForRedisplay clear arrays"];
+        if (triggerHasChanged
+            && [message.displayStats isDelayTimeSatisfied:self.dateGenerator()]
+            && [message.displayStats shouldDisplayAgain]) {
 
+            [OneSignal onesignal_Log:ONE_S_LL_VERBOSE message:@"setDataForRedisplay clear arrays"];
             [self.seenInAppMessages removeObject:message.messageId];
             [self.impressionedInAppMessages removeObject:message.messageId];
             [message clearClickIds];
